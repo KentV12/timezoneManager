@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+
+{% block body %}
+
+<div class="row">
+    <div class="col-4"></div>
+    <div class="col-4">
+        <form action="/register" method="post">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" class="form-control" name="username">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" name="password">
+            </div>
+            <div>
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" name="password2">
+            </div>
+            <div class="form-text mb-3">
+                Your password must have at least 3 characters and contain numbers
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+    <div class="col-4"></div>
+</div>
+
+{% endblock %}

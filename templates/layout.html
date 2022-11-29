@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Hello, World!</title>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="nav m-3 bg-white">
+            {% if session["name"] %}
+                <a class="navbar-brand text-dark" href="#">Navbar</a>
+                <a class="nav-link text-dark ms-auto" href="/logout">Logout</a>
+            {% else %}
+                <a class="navbar-brand text-dark" href="#">Navbar</a>
+                <a class="nav-link text-dark ms-auto" href="/register">Register</a>
+                <a class="nav-link text-dark" href="/login">Login</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="text-center mb-5">Timezone Manager</h1>
+        <!-- <blockquote class="text-center blockquote-footer">register to get started!</blockquote> -->
+
+        {% block body %}{% endblock %}
+
+        <script>
+
+            // document.querySelector("form").addEventListener("submit", function(e)
+            // {
+            //     let name = document.querySelector("#name").value;
+            //     alert("hello, " + name)
+            //     e.preventDefault()
+            // });
+
+        </script>
+
+    </div>
+
+</body>
+
+</html>
