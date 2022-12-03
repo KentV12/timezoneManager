@@ -21,5 +21,34 @@
     </tbody>
 </table>
 
+<div class="dropdown text-center">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Add Timezone
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        {% for timezone in all_timezones%}
+        <a class="dropdown-item" href="/">{{ timezone }}</a>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+
+    function grabValue()
+    {
+        // let zone = document.querySelector("#name").value;
+        // alert("chose " + zone)
+        alert("HEY");
+    }
+
+    // find all a tags and add a listener for click
+    let btns = document.querySelectorAll("a");
+    for (i of btns) {
+        i.addEventListener("click", function() {
+            alert(this.innerHTML);
+        });
+    }
+
+</script>
 
 {% endblock %}
