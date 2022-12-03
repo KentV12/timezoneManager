@@ -4,6 +4,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 import requests
 import os
 import mysql.connector
+from time import sleep
 
 
 # Note: API can only retrieve one request per second
@@ -26,7 +27,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 connection = mysql.connector.connect(host="localhost", user=os.getenv("db_user"), passwd=os.getenv("db_pwd"), db="testdb")
-mycursor = connection.cursor(prepared=True)
+mycursor = connection.cursor(dictionary=True)
 
 API_KEY = os.getenv("API_KEY")
 
@@ -42,46 +43,58 @@ for zone in responseDict["zones"]:
 
 @app.route("/")
 def index():
-    # display users list if there is a session. Else, redirect to login page
+    # no cookie - not logged in
     if not session.get("name"): # use .get else session["name"] will cause error because no session is present
         return redirect("/login")
     # print("index", session['name'])
 
-    # retrieve api and make a list
-    url = f"http://api.timezonedb.com/v2.1/get-time-zone?key={API_KEY}&format=json&by=zone&zone=America/Vancouver"
-    response = requests.get(url)
-    # print(response.text)
-
-    responseDict = response.json()
+    # find user on database and request their timezones
+    mycursor.execute( "SELECT * FROM usertimezones WHERE username = (%s)", (session["name"],) )
+    rows = mycursor.fetchall()
     timezones = []
-    timezones.append(responseDict["formatted"])
-    # print(timezones)
+
+    # make a request for user's timezones
+    for row in rows:
+        sleep(1) # only one response per second,  specified by API documentation
+
+        zone = row["zone"]
+        url = f"http://api.timezonedb.com/v2.1/get-time-zone?key={API_KEY}&format=json&by=zone&zone={zone}"
+        response = requests.get(url)
+        responseDict = response.json()
+
+        timezones.append( {"name": zone, "time": responseDict["formatted"]} )
 
     return render_template("index.html", timezones=timezones, all_timezones=all_timezones)
         
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # if request.method == "POST":
+    if request.method == "POST":
         # check if user exists in database
-        # username = request.form.get("username")
+        username = request.form.get("username")
+        password = request.form.get("password")
 
-        # mycursor.execute("SELECT * FROM users WHERE username = (%s)", (username, hash))
-        # print('username correct')
-        # password = request.form.get("password")
+        # server-side error checking
+        if username == "" or password == "":
+            return apology()
 
-        # if username == "admin" and password == "123":
-        #     print(username, password)
-        #     session["name"] = username
-        #     return redirect("/")
-        # else:
-        #     # incorrent user credentials
-        #     return redirect("/login")
+        mycursor.execute("SELECT * FROM users WHERE username = (%s)", (username, ))
+        rows = mycursor.fetchall()
 
-        # print(session['name'])
+        # no row with specified username
+        if len(rows) == 0:
+            print("username does not exist")
+            return apology()
 
-    # return render_template("login.html")
-    return False
+        # check if username and password hash are both correct
+        if username == rows[0]["username"] and check_password_hash(rows[0]["pwd_hash"], password):
+            session["name"] = username
+            return redirect("/")
+        else:
+            # incorrent user credentials
+            return apology()
+
+    return render_template("login.html")
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -113,9 +126,17 @@ def register():
     else:
         return render_template("register.html")
 
-@app.route("/add")
+@app.route("/addTimezone", methods=["POST"])
 def addTimezone():
     # add timezone to database for a user
+
+    # zone = None
+    # if request.method == "POST":
+    #     zone = request.form.get("selectedZone")
+
+    # mycursor.execute("INSERT INTO usertimezones VALUES (%s, %s)", (session["name"], zone))
+
+    # print('adding timezone:', zone)
     return redirect("/")
 
 @app.route("/logout", methods=["GET"])

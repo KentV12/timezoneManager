@@ -5,7 +5,6 @@
 <table class="table text-center">
     <thead>
         <tr>
-            <th>ID</th>
             <th>Name</th>
             <th>Current Time</th>
         </tr>
@@ -13,41 +12,47 @@
     <tbody>
         {% for timezone in timezones %}
         <tr>
-            <td>1</td>
-            <td>Vancouver (Home)</td>
-            <td>{{ timezone }}</td>
+            <td>{{ timezone["name"] }}</td>
+            <td>{{ timezone["time"] }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<div class="dropdown text-center">
-    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        Add Timezone
-    </button>
-    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-        {% for timezone in all_timezones%}
-        <a class="dropdown-item" href="/">{{ timezone }}</a>
-        {% endfor %}
+<div class="row mb-3">
+    <div class="col-4"></div>
+    <div class="col-4">
+        <form action="/addTimezone" method="post">
+            <div class="input-group mb-3">
+                <input class="form-control text-center mb-3" list="datalistOptions" name="selectedZone" placeholder="Type to search...">
+                <datalist id="datalistOptions">
+                    <option value="America/Vancouver">
+                    <option value="Asia/Shanghai">
+                </datalist>
+                <div class="input-group-append ms-1">
+                    <button class="btn btn-outline-secondary" type="submit">Button</button>
+                </div>
+            </div>
+        </form>
     </div>
+    <div class="col-4"></div>
 </div>
 
 <script>
 
-    function grabValue()
-    {
+    function grabValue() {
         // let zone = document.querySelector("#name").value;
         // alert("chose " + zone)
         alert("HEY");
     }
 
     // find all a tags and add a listener for click
-    let btns = document.querySelectorAll("a");
-    for (i of btns) {
-        i.addEventListener("click", function() {
-            alert(this.innerHTML);
-        });
-    }
+    // let btns = document.querySelectorAll("a");
+    // for (i of btns) {
+    //     i.addEventListener("click", function() {
+    //         alert(this.innerHTML);
+    //     });
+    // }
 
 </script>
 
