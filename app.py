@@ -67,21 +67,19 @@ def index():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        # check if user exists in database
         username = request.form.get("username")
         password = request.form.get("password")
 
         # server-side error checking
         if username == "" or password == "":
-            return apology()
+            return apology("Invalid username or password.")
 
         mycursor.execute("SELECT * FROM users WHERE username = (%s)", (username, ))
         rows = mycursor.fetchall()
 
-        # no row with specified username
+        # # check if user exists in database
         if len(rows) == 0:
-            print("username does not exist")
-            return apology()
+            return apology("Username does not exist")
 
         # check if username and password hash are both correct
         if username == rows[0]["username"] and check_password_hash(rows[0]["pwd_hash"], password):
@@ -89,7 +87,7 @@ def login():
             return redirect("/")
         else:
             # incorrent user credentials
-            return apology()
+            return apology("Invalid password or username.")
 
     return render_template("login.html")
 
@@ -103,15 +101,16 @@ def register():
         password = request.form.get("password")
         password2 = request.form.get("password2")
 
+        # check for any missing fields or mismatch passwords
         if username == "" or password == "" or password2 == "" or password != password2:
-            return apology()
+            return apology("Invalid fields or mismatch password.")
 
         mycursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         rows = mycursor.fetchall()
 
+        # invalid password or username is taken
         if len(password) < 3 or len(rows) == 1:
-            print('password invalid or username exists')
-            return apology()
+            return apology("Invalid password or username is taken.")
 
         # add to database
         hash = generate_password_hash(password)
@@ -131,14 +130,14 @@ def addTimezone():
 
         # server-side error checking
         if zone not in all_timezones:
-            return apology()
+            return apology("Zone does not exist.")
 
         mycursor.execute("INSERT INTO usertimezones VALUES (%s, %s, %s)", (session["name"], zone, note))
         connection.commit()
         print('adding timezone:', zone)
         return redirect("/")
 
-    return apology()
+    return apology("Unable to add timezone.")
 
 @app.route("/deleteTimezone", methods=["POST"])
 def deleteTimezone():
@@ -149,7 +148,7 @@ def deleteTimezone():
         zone = request.form.get("selectedZone")
 
         if zone not in all_timezones:
-            return apology()
+            return apology("Zone does not exist.")
 
         mycursor.execute("DELETE FROM usertimezones WHERE username = (%s) AND zone = (%s)", (session["name"], zone))
         connection.commit()
@@ -157,7 +156,7 @@ def deleteTimezone():
 
         return redirect("/")
 
-    return apology()
+    return apology("Unable to delete timezone.")
 
 @app.route("/logout", methods=["GET"])
 def logout():
@@ -166,5 +165,5 @@ def logout():
 
 # server side - error checking
 @app.route("/apology")
-def apology():
-    return render_template("apology.html")
+def apology(message):
+    return render_template("apology.html", message=message)
