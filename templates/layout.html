@@ -16,10 +16,10 @@
     <div class="container-fluid">
         <div class="nav m-3 bg-white">
             {% if session["name"] %}
-                <a class="navbar-brand text-dark" href="#">Navbar</a>
+                <a class="navbar-brand text-dark" href="/">Home</a>
                 <a class="nav-link text-dark ms-auto" href="/logout">Logout</a>
             {% else %}
-                <a class="navbar-brand text-dark" href="#">Navbar</a>
+                <a class="navbar-brand text-dark" href="/">Timezone</a>
                 <a class="nav-link text-dark ms-auto" href="/register">Register</a>
                 <a class="nav-link text-dark" href="/login">Login</a>
             {% endif %}

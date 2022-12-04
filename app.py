@@ -46,7 +46,6 @@ def index():
     # no cookie - not logged in
     if not session.get("name"): # use .get else session["name"] will cause error because no session is present
         return redirect("/login")
-    # print("index", session['name'])
 
     # find user on database and request their timezones
     mycursor.execute( "SELECT * FROM usertimezones WHERE username = (%s)", (session["name"],) )
@@ -56,13 +55,11 @@ def index():
     # make a request for user's timezones
     for row in rows:
         sleep(1) # only one response per second,  specified by API documentation
-
         zone = row["zone"]
         url = f"http://api.timezonedb.com/v2.1/get-time-zone?key={API_KEY}&format=json&by=zone&zone={zone}"
         response = requests.get(url)
         responseDict = response.json()
-
-        timezones.append( {"name": zone, "time": responseDict["formatted"]} )
+        timezones.append( {"name": zone, "time": responseDict["formatted"], "note": row["note"]})
 
     return render_template("index.html", timezones=timezones, all_timezones=all_timezones)
         
@@ -121,7 +118,6 @@ def register():
         mycursor.execute("INSERT INTO users VALUES (%s, %s)", (username, hash))
         connection.commit()
         
-
         return render_template("login.html")
     else:
         return render_template("register.html")
@@ -129,15 +125,39 @@ def register():
 @app.route("/addTimezone", methods=["POST"])
 def addTimezone():
     # add timezone to database for a user
+    if request.method == "POST":
+        zone = request.form.get("selectedZone")
+        note = request.form.get("note")
 
-    # zone = None
-    # if request.method == "POST":
-    #     zone = request.form.get("selectedZone")
+        # server-side error checking
+        if zone not in all_timezones:
+            return apology()
 
-    # mycursor.execute("INSERT INTO usertimezones VALUES (%s, %s)", (session["name"], zone))
+        mycursor.execute("INSERT INTO usertimezones VALUES (%s, %s, %s)", (session["name"], zone, note))
+        connection.commit()
+        print('adding timezone:', zone)
+        return redirect("/")
 
-    # print('adding timezone:', zone)
-    return redirect("/")
+    return apology()
+
+@app.route("/deleteTimezone", methods=["POST"])
+def deleteTimezone():
+    # delete a user's timezone from database
+
+    zone = None
+    if request.method == "POST":
+        zone = request.form.get("selectedZone")
+
+        if zone not in all_timezones:
+            return apology()
+
+        mycursor.execute("DELETE FROM usertimezones WHERE username = (%s) AND zone = (%s)", (session["name"], zone))
+        connection.commit()
+        print('deleteing timezone:', zone)
+
+        return redirect("/")
+
+    return apology()
 
 @app.route("/logout", methods=["GET"])
 def logout():

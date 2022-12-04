@@ -5,7 +5,8 @@
 <table class="table text-center">
     <thead>
         <tr>
-            <th>Name</th>
+            <th>Location</th>
+            <th>Note</th>
             <th>Current Time</th>
         </tr>
     </thead>
@@ -13,29 +14,85 @@
         {% for timezone in timezones %}
         <tr>
             <td>{{ timezone["name"] }}</td>
+            <td>{{ timezone["note"] }}</td>
             <td>{{ timezone["time"] }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<div class="row mb-3">
+<!-- Button trigger modal -->
+<div class="row">
     <div class="col-4"></div>
-    <div class="col-4">
-        <form action="/addTimezone" method="post">
-            <div class="input-group mb-3">
-                <input class="form-control text-center mb-3" list="datalistOptions" name="selectedZone" placeholder="Type to search...">
-                <datalist id="datalistOptions">
-                    <option value="America/Vancouver">
-                    <option value="Asia/Shanghai">
-                </datalist>
-                <div class="input-group-append ms-1">
-                    <button class="btn btn-outline-secondary" type="submit">Button</button>
-                </div>
-            </div>
-        </form>
+    <div class="d-grid col-2 mx-auto">
+        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addModal">Add</button>
+    </div>
+    
+    <div class="d-grid col-2 mx-auto">
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#deleteModal">Delete</button>
     </div>
     <div class="col-4"></div>
+</div>
+
+<!-- Add Timezone Modal -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Timezone</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/addTimezone" method="post">
+                    <div class="input-group mb-3">
+                        <input class="form-control text-center mb-3" list="addOptions" name="selectedZone" placeholder="Search by city">
+                        <input type="text" class="form-control text-center mb-3" name="note" placeholder="Note">
+                        <datalist id="addOptions">
+                            {% for timezone in all_timezones %}
+                            <option value="{{timezone}}">
+                            {% endfor %}
+                        </datalist>
+                        <div class="input-group-append ms-1">
+                            <button class="btn btn-outline-secondary" type="submit">Add</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Timezone Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel2">Delete Timezone</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="/deleteTimezone" method="post">
+                    <div class="input-group mb-3">
+                        <input class="form-control text-center mb-3" list="deleteOptions" name="selectedZone" placeholder="Search by city">
+                        <datalist id="deleteOptions">
+                            {% for zone in timezones %}
+                            <option value="{{ zone['name'] }}">
+                            {% endfor %}
+                        </datalist>
+                        <div class="input-group-append ms-1">
+                            <button class="btn btn-outline-secondary" type="submit">Delete</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -43,7 +100,7 @@
     function grabValue() {
         // let zone = document.querySelector("#name").value;
         // alert("chose " + zone)
-        alert("HEY");
+        alert("test");
     }
 
     // find all a tags and add a listener for click
