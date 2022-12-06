@@ -26,7 +26,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-connection = mysql.connector.connect(host="localhost", user=os.getenv("db_user"), passwd=os.getenv("db_pwd"), db="testdb")
+connection = mysql.connector.connect(host=os.getenv("host_name"), user=os.getenv("db_user"), passwd=os.getenv("db_pwd"), db="testdb")
 mycursor = connection.cursor(dictionary=True)
 
 API_KEY = os.getenv("API_KEY")
@@ -74,6 +74,7 @@ def login():
         if username == "" or password == "":
             return apology("Invalid username or password.")
 
+        # find user
         mycursor.execute("SELECT * FROM users WHERE username = (%s)", (username, ))
         rows = mycursor.fetchall()
 
@@ -105,6 +106,7 @@ def register():
         if username == "" or password == "" or password2 == "" or password != password2:
             return apology("Invalid fields or mismatch password.")
 
+        # find user
         mycursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         rows = mycursor.fetchall()
 
@@ -132,9 +134,9 @@ def addTimezone():
         if zone not in all_timezones:
             return apology("Zone does not exist.")
 
+        # add selected timezone
         mycursor.execute("INSERT INTO usertimezones VALUES (%s, %s, %s)", (session["name"], zone, note))
         connection.commit()
-        print('adding timezone:', zone)
         return redirect("/")
 
     return apology("Unable to add timezone.")
@@ -150,10 +152,9 @@ def deleteTimezone():
         if zone not in all_timezones:
             return apology("Zone does not exist.")
 
+        # delete selected timezone
         mycursor.execute("DELETE FROM usertimezones WHERE username = (%s) AND zone = (%s)", (session["name"], zone))
         connection.commit()
-        print('deleteing timezone:', zone)
-
         return redirect("/")
 
     return apology("Unable to delete timezone.")

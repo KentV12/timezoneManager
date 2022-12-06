@@ -1,0 +1,5 @@
+# .gitignore
+__pycache__
+.Vscode
+flask_session
+env.txt
