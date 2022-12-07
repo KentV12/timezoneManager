@@ -5,6 +5,9 @@ import requests
 import os
 import mysql.connector
 from time import sleep
+import sys
+import psycopg2
+import psycopg2.extras
 
 
 # Note: API can only retrieve one request per second
@@ -26,8 +29,8 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-connection = mysql.connector.connect(host=os.getenv("host_name"), user=os.getenv("db_user"), passwd=os.getenv("db_pwd"), db="testdb")
-mycursor = connection.cursor(dictionary=True)
+connection = psycopg2.connect(database="timezone_db", user=os.getenv("db_user"), password=os.getenv("db_pwd"), host=os.getenv("host_name"), port="5432")
+mycursor = connection.cursor()
 
 API_KEY = os.getenv("API_KEY")
 
@@ -55,11 +58,11 @@ def index():
     # make a request for user's timezones
     for row in rows:
         sleep(1) # only one response per second,  specified by API documentation
-        zone = row["zone"]
+        zone = row[1]
         url = f"http://api.timezonedb.com/v2.1/get-time-zone?key={API_KEY}&format=json&by=zone&zone={zone}"
         response = requests.get(url)
         responseDict = response.json()
-        timezones.append( {"name": zone, "time": responseDict["formatted"], "note": row["note"]})
+        timezones.append( {"name": zone, "time": responseDict["formatted"], "note": row[2]})
 
     return render_template("index.html", timezones=timezones, all_timezones=all_timezones)
         
@@ -83,7 +86,7 @@ def login():
             return apology("Username does not exist")
 
         # check if username and password hash are both correct
-        if username == rows[0]["username"] and check_password_hash(rows[0]["pwd_hash"], password):
+        if username == rows[0][0] and check_password_hash(rows[0][1], password):
             session["name"] = username
             return redirect("/")
         else:
