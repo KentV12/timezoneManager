@@ -29,7 +29,7 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-connection = psycopg2.connect(database="timezone_db", user=os.getenv("db_user"), password=os.getenv("db_pwd"), host=os.getenv("host_name"), port="5432")
+connection = psycopg2.connect(database=os.getenv("timezone_db"), user=os.getenv("db_user"), password=os.getenv("db_pwd"), host=os.getenv("host_name"), port="5432")
 mycursor = connection.cursor()
 
 API_KEY = os.getenv("API_KEY")
@@ -44,28 +44,32 @@ all_timezones = []
 for zone in responseDict["zones"]:
     all_timezones.append(zone["zoneName"])
 
+
 @app.route("/")
 def index():
     # no cookie - not logged in
-    if not session.get("name"): # use .get else session["name"] will cause error because no session is present
+    # use .get else session["name"] will cause error because no session is present
+    if not session.get("name"):
         return redirect("/login")
 
     # find user on database and request their timezones
-    mycursor.execute( "SELECT * FROM usertimezones WHERE username = (%s)", (session["name"],) )
+    mycursor.execute(
+        "SELECT * FROM usertimezones WHERE username = (%s)", (session["name"],))
     rows = mycursor.fetchall()
     timezones = []
 
     # make a request for user's timezones
     for row in rows:
-        sleep(1) # only one response per second,  specified by API documentation
+        sleep(1)  # only one response per second,  specified by API documentation
         zone = row[1]
         url = f"http://api.timezonedb.com/v2.1/get-time-zone?key={API_KEY}&format=json&by=zone&zone={zone}"
         response = requests.get(url)
         responseDict = response.json()
-        timezones.append( {"name": zone, "time": responseDict["formatted"], "note": row[2]})
+        timezones.append(
+            {"name": zone, "time": responseDict["formatted"], "note": row[2]})
 
     return render_template("index.html", timezones=timezones, all_timezones=all_timezones)
-        
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -78,7 +82,8 @@ def login():
             return apology("Invalid username or password.")
 
         # find user
-        mycursor.execute("SELECT * FROM users WHERE username = (%s)", (username, ))
+        mycursor.execute(
+            "SELECT * FROM users WHERE username = (%s)", (username, ))
         rows = mycursor.fetchall()
 
         # # check if user exists in database
@@ -95,9 +100,10 @@ def login():
 
     return render_template("login.html")
 
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == "POST":        
+    if request.method == "POST":
         print("registering...")
 
         # validate username and password
@@ -110,7 +116,8 @@ def register():
             return apology("Invalid fields or mismatch password.")
 
         # find user
-        mycursor.execute("SELECT * FROM users WHERE username = %s", (username,))
+        mycursor.execute(
+            "SELECT * FROM users WHERE username = %s", (username,))
         rows = mycursor.fetchall()
 
         # invalid password or username is taken
@@ -121,10 +128,11 @@ def register():
         hash = generate_password_hash(password)
         mycursor.execute("INSERT INTO users VALUES (%s, %s)", (username, hash))
         connection.commit()
-        
+
         return render_template("login.html")
     else:
         return render_template("register.html")
+
 
 @app.route("/addTimezone", methods=["POST"])
 def addTimezone():
@@ -138,11 +146,13 @@ def addTimezone():
             return apology("Zone does not exist.")
 
         # add selected timezone
-        mycursor.execute("INSERT INTO usertimezones VALUES (%s, %s, %s)", (session["name"], zone, note))
+        mycursor.execute(
+            "INSERT INTO usertimezones VALUES (%s, %s, %s)", (session["name"], zone, note))
         connection.commit()
         return redirect("/")
 
     return apology("Unable to add timezone.")
+
 
 @app.route("/deleteTimezone", methods=["POST"])
 def deleteTimezone():
@@ -156,11 +166,13 @@ def deleteTimezone():
             return apology("Zone does not exist.")
 
         # delete selected timezone
-        mycursor.execute("DELETE FROM usertimezones WHERE username = (%s) AND zone = (%s)", (session["name"], zone))
+        mycursor.execute(
+            "DELETE FROM usertimezones WHERE username = (%s) AND zone = (%s)", (session["name"], zone))
         connection.commit()
         return redirect("/")
 
     return apology("Unable to delete timezone.")
+
 
 @app.route("/logout", methods=["GET"])
 def logout():
@@ -168,6 +180,8 @@ def logout():
     return redirect("/")
 
 # server side - error checking
+
+
 @app.route("/apology")
 def apology(message):
     return render_template("apology.html", message=message)
